@@ -1,2 +1,2 @@
 # Domain
-## The game about 100 country, only the chosen one survive.
+## 100 countrys in, only the chosen one survive.
