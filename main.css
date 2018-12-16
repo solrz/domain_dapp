@@ -1,0 +1,46 @@
+
+font {
+    font-family: 'Raleway','Source Sans Pro', 'Arial';
+    }
+
+
+#menu{
+　background-color:#FFECC9;
+
+　height:400px;
+　text-align:center;
+　line-height:400px;
+}
+
+#domain{
+  width:60%;
+　height:400px;
+　background-color:#F2FFF2;
+　text-align:center;
+　line-height:400px;
+}
+
+#new{
+  width:40%;
+　height:400px;
+　background-color:#F2FFF2;
+　text-align:center;
+　line-height:400px;
+  margin: 0px 0px;
+}
+
+#serch_domain_id{
+  width: 35px;
+}
+
+
+
+input {
+    padding:10px;
+    width: 50%;
+    margin-bottom: 1em;
+}
+button {
+    margin: 8px 15px;
+    padding: 8px 10px;
+}

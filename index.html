@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="UTF-8">
+
+    <title>example</title>
+
+    <link rel="stylesheet" href="main.css">
+    <script src="./web3.js"></script>
+    <script src="./jquery-3.2.1.slim.min.js"></script>
+    <script src="./abi.js"></script>
+
+</head>
+<body>
+        <center>
+
+      　<div id="menu" >
+
+        <font face="DFKai-sb" size="5">現有兵力:</font>
+        <font face="DFKai-sb" size="5" id="aop">載入中... </font>
+        <font face="DFKai-sb" size="5">冷卻時間:</font>
+        <font face="DFKai-sb" size="5" id="time">載入中... </font>
+        <button id="get">領取招募兵力</button><br>
+
+
+        <font>領地id:</font>
+        <label for=""  >
+          <input type="text" id="serch_domain_id">
+        </label>
+        <button id="serch">搜尋</button>
+
+
+          <select id="select" onchange="show(this.value)">
+          　<option value=null>請選擇自己的領地</option>
+          　
+
+          </select>
+
+        </div>
+
+        </center>
+
+        <center>
+      　<div id="domain" style="background-color:#d5f4e6;">
+
+            <font  face="DFKai-sb" size="8">領地資訊</font><br>
+
+            <font  face="DFKai-sb" size="5">id:</font>
+            <font  face="DFKai-sb" size="5" id="domain_id">載入中...</font><br>
+
+            <font face="DFKai-sb" size="5">擁有者:</font>
+            <font id="domain_owner" font face="DFKai-sb" size="5">載入中...</font><br>
+
+            <font  face="DFKai-sb" size="5">等級:</font>
+            <font  face="DFKai-sb" size="5" id="domain_level">載入中...</font><br>
+
+            <font  face="DFKai-sb" size="5">駐守兵力:</font>
+            <font  face="DFKai-sb" size="5" id="domain_troops">載入中...</font><br>
+
+
+
+            <label for="" class="">請輸入欲部屬兵力
+              <input id="_amout" type="text"></label>
+            <button id="deploy" >部屬兵力</button><br>
+
+
+              <label for="" class="">請輸入欲收回兵力
+                <input id="_amout2" type="text"></label>
+            <button id="take_back" >收回兵力</button><br>
+
+            <label for="" class="">請輸入欲攻打兵力
+              <input id="_amout3" type="text"></label>
+          <button id="atk_domain" >攻打領地</button><br>
+
+            <button id="receive_reward" >領取領地資源</button>
+            <button id="upgrade" >升級</button>
+
+
+        </div>
+        </center>
+
+
+
+    <script>
+
+
+
+     web3 = new Web3(window.dexon);
+     //使用自訂節點
+
+    var userAccount;
+    web3.eth.getAccounts(function(error, result) {
+      userAccount = result[0];
+      console.log(userAccount);
+
+        var contract = new web3.eth.Contract(abi,'0x310827AB7eCa020f5223AfEe9d1cD16461f38029');
+
+
+    contract.methods.players(userAccount).call({from:userAccount}).then(
+      function(players){
+        console.log(players);
+        var num = players.ownDomainNum;
+        var ownDomain = players.ownDomain;
+        console.log(ownDomain);
+        for(i=0;i<num;i++){
+
+          $("#select").append($("<option></option>").
+            attr("value", i).
+            text(String(ownDomain[i])));
+        }
+      }
+    )
+
+    contract.methods.view_troops(userAccount).call({from:userAccount})
+    .then(function(doi){
+      console.log(doi);
+      $("#aop").html(doi);
+        console.log(doi);
+    });
+
+/*
+    contract.methods.view_user_cooldown(userAccount).call({from:userAccount})
+    .then(function(doi){
+      console.log(doi);
+      $("#time").html(doi);
+        console.log(doi);
+    });
+
+*/
+    $("#push").click(function() {
+
+    });
+
+    $("#serch").click(function() {
+      var input = $("#serch_domain_id").val();
+      contract.methods.domains(input).call({from:userAccount}).then(
+        function(domain){
+          console.log(domain);
+          if (domain.owner == "0x0000000000000000000000000000000000000000"){
+            $("#domain_owner").html("無");
+          }
+          else if(domain.owner == userAccount){
+            $("#domain_owner").html("自己");
+          }
+
+          else{
+            $("#domain_owner").html(domain.owner);
+          }
+
+
+          $("#domain_level").html(domain.level);
+          $("#domain_troops").html(domain.troops);
+          $("#domain_id").html(input);
+          $("#domain_id").value = input;
+
+
+
+        });
+    });
+
+    $("#deploy").click(function() {
+
+      var input = $("#serch_domain_id").val();
+      var input2 = $("#_amout").val();
+      console.log(input,input2);
+
+
+        contract.methods.deployTroops(input,input2).send({from:userAccount,gas:250000});
+
+    });
+
+    $("#take_back").click(function() {
+
+      var input = $("#serch_domain_id").val();
+      var input2 = $("#_amout2").val();
+      console.log(input,input2);
+
+      contract.methods.recall_troops(input,input2).send({from:userAccount,gas:250000});
+
+
+    });
+
+    $("#atk_domain").click(function() {
+
+
+      var input = $("#_amout3").val();
+      var input2 = $("#serch_domain_id").val();
+
+      console.log(input,input2);
+
+      contract.methods.attackDomain(input,input2).send({from:userAccount,gas:250000});
+    });
+
+
+    $("#get").click(function() {
+
+      contract.methods.dailyReward().send({from:userAccount,gas:250000});
+    });
+
+    $("#receive_reward").click(function() {
+
+      var input = $("#serch_domain_id").val();
+      contract.methods.claimADomainReward(input).send({from:userAccount,gas:250000});
+    });
+
+
+    $("#upgrade").click(function() {
+
+      var input = $("#serch_domain_id").val();
+
+      contract.methods.upgrade(input,1).send({from:userAccount,gas:250000});
+    });
+
+
+
+
+
+  });
+
+  function show(input){
+    web3.eth.getAccounts(function(error, result) {
+      userAccount = result[0];
+      console.log(userAccount);
+
+      $("#serch_domain_id").html(1) ;
+  })}
+
+
+
+    </script>
+
+</body>
+</html>
