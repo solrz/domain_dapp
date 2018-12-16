@@ -61,12 +61,12 @@ contract game is erc721, own{
 	method below
     */
     
-    function view_user_cooldown()view public returns(uint32){
-        return uint32((every_cooltime) - (now - uint32(players[msg.sender].lastClaimReward)));
+    function view_user_cooldown()view public returns(uint){
+        return uint(players[msg.sender].lastClaimReward + every_cooltime - now);
     }
     
     function view_domain_cooldown(uint _domain)view public returns(uint){
-        return uint32((every_cooltime) - (now - uint32(domains[_domain].lastClaimReward)));
+        return uint(domains[_domain].lastClaimReward + every_cooltime - now);
     }
     
     function upgrade(uint _domain,uint _level) public payable{
