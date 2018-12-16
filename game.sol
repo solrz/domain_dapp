@@ -1,4 +1,5 @@
 pragma solidity = 0.4.25;
+import 'https://raw.githubusercontent.com/OpenZeppelin/openzeppelin-solidity/master/contracts/math/SafeMath.sol';
 
 contract own{
   address public owner;
@@ -26,6 +27,10 @@ contract erc721{
 
 
 contract game is erc721, own{
+    using SafeMath for uint;
+    using SafeMath for uint32;
+    using SafeMath for uint256;
+    
     struct player{
      address uuid;
         uint lastClaimReward;
@@ -48,7 +53,7 @@ contract game is erc721, own{
     event Deploy(address indexed deployer,uint domain,uint amout);
     event GetTroop(address indexed, uint troop);
     
-    uint32 every_cooltime = 86400;
+    uint every_cooltime = 86400;
     uint reset = 0;
     uint troopPerLevelGive = 30;
     uint conversionRatio = 100000000000000000; // 1 to 10 troops
@@ -61,12 +66,14 @@ contract game is erc721, own{
 	method below
     */
     
-    function view_user_cooldown()view public returns(uint){
-        return uint(players[msg.sender].lastClaimReward + every_cooltime - now);
+    function view_user_cooldown(address _player)view public returns(uint){
+        uint returning_cd = players[_player].lastClaimReward + every_cooltime - now;
+        return returning_cd;
     }
     
     function view_domain_cooldown(uint _domain)view public returns(uint){
-        return uint(domains[_domain].lastClaimReward + every_cooltime - now);
+        uint returning_cd = domains[_domain].lastClaimReward + every_cooltime - now;
+        return returning_cd;
     }
     
     function upgrade(uint _domain,uint _level) public payable{
@@ -77,13 +84,15 @@ contract game is erc721, own{
         return domains[index];
     }
     
-    function attackDomain(uint _attackedDomain)public {
-        
-        if(players[msg.sender].troops >= domains[_attackedDomain].troops ){
+    function attackDomain(uint _atk_roops, uint _attackedDomain)public {
+        require(_atk_roops<= players[msg.sender].troops);
+        if(_atk_roops >= domains[_attackedDomain].troops ){
             // 所攻擊的領地打得下來
             domains[_attackedDomain].troops = reset;
-            players[msg.sender].troops -= domains[_attackedDomain].troops;
+            players[msg.sender].troops -= _atk_roops;
+            
             domains[_attackedDomain].owner = msg.sender;
+            domains[_attackedDomain].troops = _atk_roops - domains[_attackedDomain].troops;
             players[msg.sender].ownDomain.push(_attackedDomain);
             players[msg.sender].ownDomainNum++;
             
